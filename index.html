@@ -5,10 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tap Game</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f9f9f9; margin: 0; padding: 0; }
-        #game-container { margin-top: 50px; }
-        #tap-button { padding: 20px 40px; font-size: 24px; background: #007BFF; color: white; border: none; border-radius: 8px; cursor: pointer; }
-        #counter { font-size: 32px; margin: 20px 0; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        #game-container {
+            margin-top: 50px;
+        }
+
+        #tap-button {
+            padding: 20px 40px;
+            font-size: 24px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        #counter {
+            font-size: 32px;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -18,18 +40,49 @@
         <button id="tap-button">Tap!</button>
     </div>
     <script>
-        let counter = 0;
         const tg = window.Telegram.WebApp;
+        tg.expand(); // Разворачиваем WebApp
 
         const tapButton = document.getElementById('tap-button');
         const counterDisplay = document.getElementById('counter');
-        tapButton.addEventListener('click', () => {
+
+        let counter = 0;
+
+        // Функция для получения начального значения счетчика
+        async function fetchCounter() {
+            try {
+                const response = await fetch('/get_counter');
+                const data = await response.json();
+                counter = data.taps || 0;
+                counterDisplay.textContent = `Taps: ${counter}`;
+            } catch (error) {
+                console.error('Ошибка при получении счетчика:', error);
+            }
+        }
+
+        // Функция для отправки данных на сервер
+        async function updateCounter() {
             counter++;
             counterDisplay.textContent = `Taps: ${counter}`;
-            tg.sendData(JSON.stringify({ taps: counter })); // Отправить данные боту
-        });
+            try {
+                await fetch('/update_counter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ taps: counter }),
+                });
+            } catch (error) {
+                console.error('Ошибка при обновлении счетчика:', error);
+            }
+        }
 
-        tg.expand(); // Разворачиваем WebApp на весь экран
+        // Событие клика
+        tapButton.addEventListener('click', updateCounter);
+
+        // Инициализация
+        fetchCounter();
     </script>
 </body>
 </html>
+
