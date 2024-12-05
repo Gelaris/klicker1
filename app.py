@@ -7,7 +7,7 @@ tap_counter = 0
 
 @app.route("/")
 def index():
-    return render_template("index.html")  # HTML для кликера
+    return render_template("./src/App.vue")  # HTML для кликера
 
 @app.route("/get_counter", methods=["GET"])
 def get_counter():
